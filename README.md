@@ -1,4 +1,4 @@
-# EazyByts Chat Application
+# Chat Application
 
 A full-stack real-time chat application built with Spring Boot, WebSocket, JSP, and MySQL. Features user authentication, private messaging, chat rooms, and real-time notifications.
 
