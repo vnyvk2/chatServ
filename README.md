@@ -1,4 +1,4 @@
-# EazyByts Chat Application
+# Chat Application
 
 A full-stack real-time chat application built with Spring Boot, WebSocket, JSP, and MySQL. Features user authentication, private messaging, chat rooms, and real-time notifications.
 
@@ -263,15 +263,12 @@ java -jar -Dspring.profiles.active=prod target/chat-service-0.0.1-SNAPSHOT.jar
 4. Push to the branch (`git push origin feature/new-feature`)
 5. Open a Pull Request
 
-## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🙋‍♂️ Support
 
 For support and questions:
-- Email: Sagargupta@eazybyts.com
-- Phone: 8791671944
+- Email: vny.vk2@gmail.com
 
 ## 🏆 Project Highlights
 
@@ -288,4 +285,4 @@ Built as part of the EazyByts Full Stack Development Program Week 1 Project.
 
 ---
 
-**Happy Chatting! 💬**
+**Thank You 💬**
