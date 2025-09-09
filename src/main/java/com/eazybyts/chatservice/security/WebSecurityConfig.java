@@ -58,9 +58,9 @@ public class WebSecurityConfig {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
-                .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/api/auth/").permitAll()
+                .requestMatchers("/", "/login", "/register", "/css/", "/js/", "/images/").permitAll()
+                .requestMatchers("/ws/").permitAll()
                 .anyRequest().authenticated();
 
         http.authenticationProvider(authenticationProvider());

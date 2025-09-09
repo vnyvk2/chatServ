@@ -15,17 +15,17 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findByChatRoomOrderBySentAtAsc(ChatRoom chatRoom);
-    
+
     Page<Message> findByChatRoomOrderBySentAtDesc(ChatRoom chatRoom, Pageable pageable);
-    
+
     @Query("SELECT m FROM Message m WHERE (m.sender = :user1 AND m.recipient = :user2) OR (m.sender = :user2 AND m.recipient = :user1) AND m.messageType = :messageType ORDER BY m.sentAt ASC")
     List<Message> findPrivateMessagesBetweenUsers(User user1, User user2, MessageType messageType);
-    
+
     @Query("SELECT m FROM Message m WHERE m.recipient = :recipient AND m.isRead = false")
     List<Message> findUnreadMessagesByRecipient(User recipient);
-    
+
     Long countByRecipientAndIsReadFalse(User recipient);
-    
+
     @Query("SELECT m FROM Message m WHERE m.chatRoom = :chatRoom ORDER BY m.sentAt DESC")
     Page<Message> findLatestMessagesByChatRoom(ChatRoom chatRoom, Pageable pageable);
 }
