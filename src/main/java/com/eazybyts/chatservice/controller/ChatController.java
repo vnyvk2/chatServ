@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Controller
 public class ChatController {
@@ -31,7 +32,6 @@ public class ChatController {
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessage chatMessage, Principal principal) {
-        // Set the sender from the authenticated user
         chatMessage.setSender(principal.getName());
         chatMessage.setTimestamp(LocalDateTime.now());
 
@@ -47,12 +47,10 @@ public class ChatController {
                 message.setMessageType(chatMessage.getType());
                 messageRepository.save(message);
 
-                // Set the message ID for the response
                 chatMessage.setId(message.getId());
             }
         }
 
-        // Send message to chat room
         messagingTemplate.convertAndSend("/topic/public/" + chatMessage.getChatRoomId(), chatMessage);
     }
 
@@ -61,11 +59,55 @@ public class ChatController {
                         SimpMessageHeaderAccessor headerAccessor, Principal principal) {
         // Add username in web socket session
         headerAccessor.getSessionAttributes().put("username", principal.getName());
-        chatMessage.setSender(principal.getName());
-        chatMessage.setTimestamp(LocalDateTime.now());
 
-        if (chatMessage.getChatRoomId() != null) {
-            messagingTemplate.convertAndSend("/topic/public/" + chatMessage.getChatRoomId(), chatMessage);
+        // Get user details
+        Optional<User> userOpt = userRepository.findByUsername(principal.getName());
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+
+            // Determine if this is a new user or returning user
+            boolean isNewUser = user.getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(1));
+
+            // Create appropriate join message
+            ChatMessage joinMessage = new ChatMessage();
+            joinMessage.setSender(principal.getName());
+            joinMessage.setType(MessageType.JOIN);
+            joinMessage.setChatRoomId(chatMessage.getChatRoomId());
+            joinMessage.setTimestamp(LocalDateTime.now());
+
+            if (isNewUser) {
+                joinMessage.setContent(user.getFirstName() + " " + user.getLastName() + " (" + user.getUsername() + ") has joined as a new member! 🎉");
+            } else {
+                joinMessage.setContent(user.getFirstName() + " " + user.getLastName() + " (" + user.getUsername() + ") is now active 👋");
+            }
+
+            if (chatMessage.getChatRoomId() != null) {
+                messagingTemplate.convertAndSend("/topic/public/" + chatMessage.getChatRoomId(), joinMessage);
+            }
+        }
+    }
+
+    @MessageMapping("/chat.removeUser")
+    public void removeUser(@Payload ChatMessage chatMessage, Principal principal) {
+        // Get user details
+        Optional<User> userOpt = userRepository.findByUsername(principal.getName());
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setIsOnline(false);
+            user.setLastSeen(LocalDateTime.now());
+            userRepository.save(user);
+
+            // Create leave message
+            ChatMessage leaveMessage = new ChatMessage();
+            leaveMessage.setSender(principal.getName());
+            leaveMessage.setType(MessageType.LEAVE);
+            leaveMessage.setChatRoomId(chatMessage.getChatRoomId());
+            leaveMessage.setTimestamp(LocalDateTime.now());
+            leaveMessage.setContent(user.getFirstName() + " " + user.getLastName() + " (" + user.getUsername() + ") is no longer active 👋");
+
+            if (chatMessage.getChatRoomId() != null) {
+                messagingTemplate.convertAndSend("/topic/public/" + chatMessage.getChatRoomId(), leaveMessage);
+            }
         }
     }
 

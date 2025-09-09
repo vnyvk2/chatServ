@@ -38,7 +38,6 @@ public class WebSecurityConfig {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
-
         return authProvider;
     }
 
@@ -58,13 +57,18 @@ public class WebSecurityConfig {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/auth/").permitAll()
-                .requestMatchers("/", "/login", "/register", "/css/", "/js/", "/images/").permitAll()
-                .requestMatchers("/ws/").permitAll()
+                // Allow access to authentication endpoints
+                .requestMatchers("/api/auth/**").permitAll()
+                // Allow access to static resources and landing pages
+                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
+                // Allow WebSocket connections
+                .requestMatchers("/ws/**").permitAll()
+                // Require authentication for chat page
+                .requestMatchers("/chat").authenticated()
+                // All other requests need authentication
                 .anyRequest().authenticated();
 
         http.authenticationProvider(authenticationProvider());
-
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
